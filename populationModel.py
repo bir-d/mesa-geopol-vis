@@ -1,9 +1,9 @@
+import random
 import mesa
 from mesa.space import NetworkGrid
 from mesa.time import RandomActivationByType
 import networkx as nx
 from greenAgent import greenAgent
-
 
 class populationModel(mesa.Model):
     def __init__(self, N, P, num_grey, percent_grey_bad, uncertainty_interval, percent_green_voters):
@@ -11,8 +11,12 @@ class populationModel(mesa.Model):
         self.edgeProbability = P
 
         # Create the graph. We will use nx's Erdos-Renyi graph to represent a random graph of `N` nodes with `P` probability of an edge between any two nodes.
-        self.graph = nx.erdos_renyi_graph(self.num_agents, self.edgeProbability) # TODO: We need to add edge weightings to this.
-        # Feed it into Mesa
+        self.graph = nx.erdos_renyi_graph(self.num_agents, self.edgeProbability)
+        # Assign a random weight from 1-10 to each edge
+        for (u, v) in self.graph.edges():
+            self.graph.edges[u,v]['weight'] = random.randint(1,10) 
+
+        # Feed graph into Mesa
         self.grid = NetworkGrid(self.graph)
 
         # Schedule that activates agents randomly by type (green, red, blue...) 
@@ -27,14 +31,14 @@ class populationModel(mesa.Model):
                 # Second agent is blue
                 pass
             elif i < num_grey + 2:
-                # Grey agents up to amount specified in num_grey
+                # Grey agents up to amount specified in num_grey, with percent_grey_bad of them being bad
                 pass
-            else:
-                # Green agents for the rest of the graph
-                opinion = 1 if i < self.num_agents * percent_green_voters else 0
-                a = greenAgent(i, self, uncertainty_interval, opinion)
+            # else:
+            # Green agents for the rest of the graph, with percent_green_voters of them being voters (i.e. opinion = 1)
+            opinion = 1 if i < self.num_agents * percent_green_voters else 0
+            a = greenAgent(i, self, uncertainty_interval, opinion)
 
-            #add to graph
+            # Add node to graph and schedule
             self.schedule.add(a)
             self.grid.place_agent(a, node)
 

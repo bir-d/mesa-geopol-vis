@@ -1,3 +1,4 @@
+import random
 import mesa
 
 class greenAgent(mesa.Agent):
@@ -7,3 +8,20 @@ class greenAgent(mesa.Agent):
         # For now we will have agents who start at minimum uncertainty
         self.uncertainty = uncertainty_interval[0] # Uncertainty interval is a tuple of min and max uncertainty, so we take the 0th
         self.opinion = opinion
+
+    # Talk to an agent, if their uncertainty is lower than ours we will change to their opinion.
+    # If we change opinions, we will take halfway between our and their opinion (A node who is very certain will make us more certain than a less certain node)
+    def talk(self, agent):
+        if agent.uncertainty < self.uncertainty:
+            self.opinion = agent.opinion
+            self.uncertainty = (self.uncertainty + agent.uncertainty) / 2
+
+    def step(self):
+        # Get a list of adjacent node ids and iterate
+        neighbors = self.model.grid.get_neighbors(self.pos, include_center=False)
+        for neighbor in neighbors:
+            # Get a random int from 1 to 10, if its less or equal to the weight (which represents probability of interaction) we can talk to them.
+            if self.model.graph.edges[self.pos, neighbor]['weight'] >= random.randint(1,10):
+                # Get the agent at the node and talk to them.
+                agent = self.model.grid.get_cell_list_contents([neighbor])[0]
+                self.talk(agent)
