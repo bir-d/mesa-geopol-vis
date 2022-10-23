@@ -64,7 +64,6 @@ class populationModelVis():
         self.drawModel()
         self.drawButton()
 
-
     def __init__(self):
         self.setValues()
         self.createModel()
