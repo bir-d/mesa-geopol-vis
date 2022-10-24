@@ -9,6 +9,7 @@ class populationModel(mesa.Model):
     def __init__(self, N, P, num_grey, percent_grey_bad, uncertainty_interval, percent_green_voters):
         self.num_agents = N
         self.edgeProbability = P
+        self.uncertainty_interval = uncertainty_interval
 
         # Create the graph. We will use nx's Erdos-Renyi graph to represent a random graph of `N` nodes with `P` probability of an edge between any two nodes.
         self.graph = nx.erdos_renyi_graph(self.num_agents, self.edgeProbability)
@@ -36,7 +37,7 @@ class populationModel(mesa.Model):
             # else:
             # Green agents for the rest of the graph, with percent_green_voters of them being voters (i.e. opinion = 1)
             opinion = 1 if i < self.num_agents * percent_green_voters else 0
-            a = greenAgent(i, self, uncertainty_interval, opinion)
+            a = greenAgent(i, self, self.uncertainty_interval, opinion)
 
             # Add node to graph and schedule
             self.schedule.add(a)
@@ -47,3 +48,11 @@ class populationModel(mesa.Model):
         self.schedule.step_type(greenAgent)
         # self.schedule.step_type(redAgent)
         # self.schedule.step_type(blueAgent)
+
+    # Utility functions
+    def get_nodes_by_type(self, agentType):
+        if agentType == "green":
+            agentType = greenAgent
+        # TODO add red and blue
+        agent_keys: list[int] = list(self.schedule.agents_by_type[agentType].keys())
+        return [self.schedule.agents_by_type[agentType][agent_key] for agent_key in agent_keys]
