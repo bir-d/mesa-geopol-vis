@@ -1,8 +1,5 @@
 # Contains functions to communicate with the population
 
-# Push a message to all green agents on the grid.
-# The message is either "good" or "bad" (vote, and not vote)
-# The sender is either "red", "blue", or "grey", but right now only red is used as we don't touch nodes uncertainty if the message is coming from a grey or blue node.
 # The potency is the strength of the message, and is a number between 0 and 5
 # This number represents the fraction of the uncertainty interval that will have their opinion changed by the message.
 
@@ -21,11 +18,11 @@ def pushRedMessage(model, potency):
 
     # Iterate through all nodes, if their uncertainty is high enough, change their opinion.
     for node in model.get_nodes_by_type("green"):
-        if node.opinion > threshold:
+        if node.uncertainty > threshold:
             node.opinion = 0
             # For now we will have their uncertainty increase by the percentage of the potency (a max potency will double the uncertainty)
             node.uncertainty = min(
-                                    (node.uncertainty + 1 * (1 + potency / max_potency)),
+                                    ((node.uncertainty + 1) * (1 + (potency / max_potency))),
                                     uncertainty_interval[1]
                                 ) # We need to clamp uncertainty here to the upper bound of the interval
 
@@ -35,8 +32,13 @@ def pushBlueMessage(model, potency):
     threshold = getUncertaintyThreshold(potency, uncertainty_interval)
 
     for node in model.get_nodes_by_type("green"):
-        if node.opinion > threshold:
+        if node.uncertainty > threshold:
             node.opinion = 1
+            # Blue nodes have the opposite effect of red nodes on uncertainty, think of it as the government being more stable, more trustworthy than red's underhanded techniques.
+            node.uncertainty = max(
+                                    ((node.uncertainty) * ((potency / max_potency)/2)),
+                                    uncertainty_interval[0]
+                                ) # We need to clamp uncertainty here to the lower bound of the interval
 
 
 # A GreyGood will just push via pushBlueMessage(), so we only need a function for GreyBad
@@ -45,6 +47,6 @@ def pushGreyBadMessage(model, potency):
     threshold = getUncertaintyThreshold(potency, uncertainty_interval)
 
     for node in model.get_nodes_by_type("green"):
-        if node.opinion > threshold:
+        if node.uncertainty > threshold:
             node.opinion = 0
 

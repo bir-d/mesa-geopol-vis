@@ -7,14 +7,17 @@ from matplotlib.widgets import Button
 class populationModelVis():
     def setValues(self):
         # Default values
-        self.N = 20
-        self.P = 0.15
+        self.N = 30
+        self.P = 0.20
         self.num_grey = 4
         self.percent_grey_bad = 0.25
         self.uncertainty_interval = (0,10)
         self.percent_green_voters = 0.75
         self.red_is_human = True
         self.blue_is_human = True
+        self.blue_energy = 50
+        self.amount_turns = 20
+        self.turnNumber = 0
 
         # Ask if user wants to use default values, print defaults if input is ? or blank
         while True:
@@ -38,12 +41,14 @@ class populationModelVis():
                 self.percent_green_voters = float(input("Enter percentage of green agents who are voters: "))
                 self.red_is_human = input("Is red agent human? (Y/n) ").lower() == "y"
                 self.blue_is_human = input("Is blue agent human? (Y/n) ").lower() == "y"
+                self.blue_energy = int(input("Enter blue agent's energy: "))
+                self.amount_turns = int(input("Enter number of turns: "))
             elif selection.lower() == "y" or selection == "":
                 break
 
     def createModel(self):
         # create model
-        self.model = populationModel.populationModel(self.N, self.P, self.num_grey, self.percent_grey_bad, self.uncertainty_interval, self.percent_green_voters, self.red_is_human, self.blue_is_human)
+        self.model = populationModel.populationModel(self.N, self.P, self.num_grey, self.percent_grey_bad, self.uncertainty_interval, self.percent_green_voters, self.red_is_human, self.blue_is_human, self.blue_energy, self.amount_turns)
         self.pos = nx.spring_layout(self.model.graph)
 
     def drawModel(self):
@@ -76,17 +81,18 @@ class populationModelVis():
                     pos = self.pos,
                     with_labels= True,
                     # labels of nodes uncertainty except for red and blue or grey
-                    labels = {node: self.model.grid.get_cell_list_contents([node])[0].uncertainty for node in self.model.graph.nodes() if self.model.grid.get_cell_list_contents([node])[0].opinion not in [-1, -2, -3]},
+                    labels = {node: round(self.model.grid.get_cell_list_contents([node])[0].uncertainty, 2) for node in self.model.graph.nodes() if self.model.grid.get_cell_list_contents([node])[0].opinion not in [-1, -2, -3]},
                     node_color = colors,
                 )
         plt.draw()
     
-    def drawButton(self):
+    def drawButton(self): # draw button to step model
         # axes for button on bottom right
         ax = plt.axes([0.7, 0.05, 0.1, 0.075])
         self.button = Button(ax, 'Step')
         self.button.on_clicked(self.updateGraph)
     
+    #draws parameters on bottom right
     def drawParams(self):
         current_voters = 0
         current_non_voters = 0
@@ -105,19 +111,25 @@ class populationModelVis():
         params += f"percent_green_voters: {self.percent_green_voters}\n"
         params += f"red_is_human: {self.red_is_human}\n"
         params += f"blue_is_human: {self.blue_is_human}\n"
+        params += f"blue_energy: {self.blue_energy}\n"
+        params += f"amount_turns: {self.amount_turns}\n"
         params += f"\ncurrent_green_voters: {current_voters}\n"
         params += f"current_green_non_voters: {current_non_voters}\n"
         params += f"current_green_voter_percentage: {round((current_voters / (current_voters + current_non_voters)) * 100, 2)}%\n"
+        params += f"turnNumber: {self.turnNumber}/{self.amount_turns}\n"
         self.paramBox = plt.annotate(params, xy=(0.15, 0.90), xycoords='axes fraction')
 
     def updateGraph(self, event):
+        self.turnNumber += 1
         for agentString in ["green", "red", "blue", "grey"]:
             print(f"\n{agentString}'s TURN")
             self.model.stepAgent(agentString)
             plt.clf()
             self.drawModel()
-            self.drawButton()
-            self.drawParams
+            if self.turnNumber < self.amount_turns:                
+                self.drawButton()
+            self.drawParams()
+            plt.draw()
             sleep(2)
 
     def __init__(self):

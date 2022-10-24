@@ -9,7 +9,7 @@ from blueAgent import blueAgent
 from greyAgent import greyAgent
 
 class populationModel(mesa.Model):
-    def __init__(self, N, P, num_grey, percent_grey_bad, uncertainty_interval, percent_green_voters, red_is_human, blue_is_human):
+    def __init__(self, N, P, num_grey, percent_grey_bad, uncertainty_interval, percent_green_voters, red_is_human, blue_is_human, blue_energy, amount_turns):
         self.num_agents = N
         self.edgeProbability = P
         self.uncertainty_interval = uncertainty_interval
@@ -36,7 +36,7 @@ class populationModel(mesa.Model):
                 a = redAgent(i, self, red_is_human, -1)
             elif i == 1:
                 # Second agent is blue
-                a = blueAgent(i, self, blue_is_human, -2, 100)
+                a = blueAgent(i, self, blue_is_human, -2, blue_energy)
             elif i < num_grey + 2:
                 # Grey agents up to amount specified in num_grey, with percent_grey_bad of them being bad
                 greyCount += 1
