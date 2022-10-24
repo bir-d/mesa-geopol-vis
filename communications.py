@@ -24,7 +24,7 @@ def pushRedMessage(model, potency):
         if node.opinion > threshold:
             node.opinion = 0
             # For now we will have their uncertainty increase by the percentage of the potency (a max potency will double the uncertainty)
-            node.uncertainty = max(
+            node.uncertainty = min(
                                     (node.uncertainty * (1 + potency / max_potency)),
                                     uncertainty_interval[1]
                                 ) # We need to clamp uncertainty here to the upper bound of the interval

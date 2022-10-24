@@ -4,9 +4,11 @@ from mesa.space import NetworkGrid
 from mesa.time import RandomActivationByType
 import networkx as nx
 from greenAgent import greenAgent
+from redAgent import redAgent
+from blueAgent import blueAgent
 
 class populationModel(mesa.Model):
-    def __init__(self, N, P, num_grey, percent_grey_bad, uncertainty_interval, percent_green_voters):
+    def __init__(self, N, P, num_grey, percent_grey_bad, uncertainty_interval, percent_green_voters, red_is_human, blue_is_human):
         self.num_agents = N
         self.edgeProbability = P
         self.uncertainty_interval = uncertainty_interval
@@ -24,35 +26,49 @@ class populationModel(mesa.Model):
         self.schedule = RandomActivationByType(self)
 
         # Fill out the graph with agents and add them to the schedule
+        num_green = self.num_agents - num_grey - 1 - 1 # -1 for red, -1 for blue
+        g = 0
         for i, node in enumerate(self.graph.nodes()):
+            print(i)
             if i == 0:
                 # First agent is red
-                pass
+                a = redAgent(i, self, red_is_human, -1)
             elif i == 1:
                 # Second agent is blue
-                pass
+                a = blueAgent(i, self, blue_is_human, -2, 100)
             elif i < num_grey + 2:
                 # Grey agents up to amount specified in num_grey, with percent_grey_bad of them being bad
                 pass
-            # else:
-            # Green agents for the rest of the graph, with percent_green_voters of them being voters (i.e. opinion = 1)
-            opinion = 1 if i < self.num_agents * percent_green_voters else 0
-            a = greenAgent(i, self, self.uncertainty_interval, opinion)
+            else:
+                # Green agents for the rest of the graph, with percent_green_voters of them being voters (i.e. opinion = 1)
+                g += 1
+                opinion = 1 if g < num_green * percent_green_voters else 0
+                a = greenAgent(i, self, self.uncertainty_interval, opinion)
 
             # Add node to graph and schedule
+            print(isinstance(a, greenAgent))
             self.schedule.add(a)
             self.grid.place_agent(a, node)
 
-    # Finally, we just have the agents step in order of turns.
-    def step(self):
-        self.schedule.step_type(greenAgent)
-        # self.schedule.step_type(redAgent)
-        # self.schedule.step_type(blueAgent)
+    # Stepping by type handled by user (right now in populationModelVis.py)
+    def stepAgent(self, agentString):
+        agentType = self.get_agentType_from_agentString(agentString)
+        self.schedule.step_type(agentType)
+
+    def get_agentType_from_agentString(self, agentString):
+        if agentString == "green":
+            return greenAgent
+        elif agentString == "red":
+            return redAgent
+        elif agentString == "blue":
+            return blueAgent
+        else:
+            raise Exception("Invalid agentString")
 
     # Utility functions
-    def get_nodes_by_type(self, agentType):
-        if agentType == "green":
-            agentType = greenAgent
+    def get_nodes_by_type(self, agentString):
+        agentType = self.get_agentType_from_agentString(agentString)
         # TODO add red and blue
         agent_keys: list[int] = list(self.schedule.agents_by_type[agentType].keys())
         return [self.schedule.agents_by_type[agentType][agent_key] for agent_key in agent_keys]
+
