@@ -6,6 +6,7 @@ import networkx as nx
 from greenAgent import greenAgent
 from redAgent import redAgent
 from blueAgent import blueAgent
+from greyAgent import greyAgent
 
 class populationModel(mesa.Model):
     def __init__(self, N, P, num_grey, percent_grey_bad, uncertainty_interval, percent_green_voters, red_is_human, blue_is_human):
@@ -27,9 +28,9 @@ class populationModel(mesa.Model):
 
         # Fill out the graph with agents and add them to the schedule
         num_green = self.num_agents - num_grey - 1 - 1 # -1 for red, -1 for blue
-        g = 0
+        greenCount = 0
+        greyCount = 0
         for i, node in enumerate(self.graph.nodes()):
-            print(i)
             if i == 0:
                 # First agent is red
                 a = redAgent(i, self, red_is_human, -1)
@@ -38,15 +39,16 @@ class populationModel(mesa.Model):
                 a = blueAgent(i, self, blue_is_human, -2, 100)
             elif i < num_grey + 2:
                 # Grey agents up to amount specified in num_grey, with percent_grey_bad of them being bad
-                pass
+                greyCount += 1
+                isGood = False if greyCount < num_grey * percent_grey_bad else True
+                a = greyAgent(i, self, -3, False, isGood)
             else:
                 # Green agents for the rest of the graph, with percent_green_voters of them being voters (i.e. opinion = 1)
-                g += 1
-                opinion = 1 if g < num_green * percent_green_voters else 0
+                greenCount += 1
+                opinion = 1 if greenCount < num_green * percent_green_voters else 0
                 a = greenAgent(i, self, self.uncertainty_interval, opinion)
 
             # Add node to graph and schedule
-            print(isinstance(a, greenAgent))
             self.schedule.add(a)
             self.grid.place_agent(a, node)
 
@@ -62,13 +64,16 @@ class populationModel(mesa.Model):
             return redAgent
         elif agentString == "blue":
             return blueAgent
+        elif agentString == "grey":
+            return greyAgent
         else:
             raise Exception("Invalid agentString")
 
     # Utility functions
-    def get_nodes_by_type(self, agentString):
+    def get_nodes_by_type(self, agentString, randomize=False):
         agentType = self.get_agentType_from_agentString(agentString)
-        # TODO add red and blue
         agent_keys: list[int] = list(self.schedule.agents_by_type[agentType].keys())
+        if randomize:
+            random.shuffle(agent_keys)
         return [self.schedule.agents_by_type[agentType][agent_key] for agent_key in agent_keys]
 

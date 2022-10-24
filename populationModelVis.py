@@ -11,12 +11,12 @@ from blueAgent import blueAgent
 class populationModelVis():
     def setValues(self):
         # Default values
-        self.N = 15
-        self.P = 0.2
-        self.num_grey = 0
-        self.percent_grey_bad = 0.5
+        self.N = 20
+        self.P = 0.15
+        self.num_grey = 4
+        self.percent_grey_bad = 0.25
         self.uncertainty_interval = (0,10)
-        self.percent_green_voters = 0.8
+        self.percent_green_voters = 0.75
         self.red_is_human = True
         self.blue_is_human = True
 
@@ -48,7 +48,7 @@ class populationModelVis():
     def createModel(self):
         # create model
         self.model = populationModel.populationModel(self.N, self.P, self.num_grey, self.percent_grey_bad, self.uncertainty_interval, self.percent_green_voters, self.red_is_human, self.blue_is_human)
-        self.pos = nx.circular_layout(self.model.graph)
+        self.pos = nx.spring_layout(self.model.graph)
 
     def drawModel(self):
         labels = nx.get_edge_attributes(self.model.graph,'weight')
@@ -56,22 +56,31 @@ class populationModelVis():
        
         colors = []
         for node in self.model.graph.nodes():
-            opinion = self.model.grid.get_cell_list_contents([node])[0].opinion
-            if opinion == 1:
-                colors.append("#00ff00") # green
-            elif opinion == 0:
+            agent = self.model.grid.get_cell_list_contents([node])[0]
+            opinion = agent.opinion
+            if opinion == 1: # green
+                colors.append("#00ff00") 
+            elif opinion == 0: # green (non-voter)
                 colors.append("#ff00ff") # purple
-            elif opinion == -1:
-                colors.append("#ff0000") # red
-            elif opinion == -2:
-                colors.append("#0000ff") # blue
+            elif opinion == -1: # red
+                colors.append("#ff0000") 
+            elif opinion == -2: # blue
+                colors.append("#0000ff") 
+            elif opinion == -3: # grey
+                if not agent.active:
+                    colors.append((0,0,0,0.5)) #half opacity black
+                else:
+                    if agent.isGood:
+                        colors.append((0.00600, 0.0654, 0.600, 1)) # dark blue, half opacity if inactive
+                    else:
+                        colors.append((0.600, 0.00600, 0.0258, 1)) # dark red, half opacity if inactive
 
         self.f = nx.draw(
                     self.model.graph,
                     pos = self.pos,
                     with_labels= True,
-                    # labels of nodes uncertainty except for red and blue
-                    labels = {node: self.model.grid.get_cell_list_contents([node])[0].uncertainty for node in self.model.graph.nodes() if self.model.grid.get_cell_list_contents([node])[0].opinion not in [-1, -2]},
+                    # labels of nodes uncertainty except for red and blue or grey
+                    labels = {node: self.model.grid.get_cell_list_contents([node])[0].uncertainty for node in self.model.graph.nodes() if self.model.grid.get_cell_list_contents([node])[0].opinion not in [-1, -2, -3]},
                     node_color = colors,
                 )
         plt.draw()
@@ -83,7 +92,7 @@ class populationModelVis():
         self.button.on_clicked(self.updateGraph)
 
     def updateGraph(self, event):
-        for agentString in ["green", "red", "blue"]:
+        for agentString in ["green", "red", "blue", "grey"]:
             print(f"\n{agentString}'s TURN")
             self.model.stepAgent(agentString)
             plt.clf()
