@@ -3,10 +3,6 @@ import networkx as nx
 import populationModel
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
-from greenAgent import greenAgent
-from redAgent import redAgent
-from blueAgent import blueAgent
-
 
 class populationModelVis():
     def setValues(self):
@@ -90,6 +86,29 @@ class populationModelVis():
         ax = plt.axes([0.7, 0.05, 0.1, 0.075])
         self.button = Button(ax, 'Step')
         self.button.on_clicked(self.updateGraph)
+    
+    def drawParams(self):
+        current_voters = 0
+        current_non_voters = 0
+        for node in self.model.get_nodes_by_type("green"):
+            if node.opinion == 1:
+                current_voters += 1
+            else:
+                current_non_voters += 1
+
+        params = ""
+        params += f"N: {self.N}\n"
+        params += f"P: {self.P}\n"
+        params += f"num_grey: {self.num_grey}\n"
+        params += f"percent_grey_bad: {self.percent_grey_bad}\n"
+        params += f"uncertainty_interval: {self.uncertainty_interval}\n"
+        params += f"percent_green_voters: {self.percent_green_voters}\n"
+        params += f"red_is_human: {self.red_is_human}\n"
+        params += f"blue_is_human: {self.blue_is_human}\n"
+        params += f"\ncurrent_green_voters: {current_voters}\n"
+        params += f"current_green_non_voters: {current_non_voters}\n"
+        params += f"current_green_voter_percentage: {round((current_voters / (current_voters + current_non_voters)) * 100, 2)}%\n"
+        self.paramBox = plt.annotate(params, xy=(0.15, 0.90), xycoords='axes fraction')
 
     def updateGraph(self, event):
         for agentString in ["green", "red", "blue", "grey"]:
@@ -98,6 +117,7 @@ class populationModelVis():
             plt.clf()
             self.drawModel()
             self.drawButton()
+            self.drawParams
             sleep(2)
 
     def __init__(self):
@@ -105,6 +125,7 @@ class populationModelVis():
         self.createModel()
         self.drawModel()
         self.drawButton()
+        self.drawParams()
 
         plt.show()
 

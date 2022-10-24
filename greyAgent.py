@@ -7,13 +7,13 @@ class greyAgent(mesa.Agent):
         self.opinion = opinion
         self.active = active
         self.isGood = isGood
-        print(opinion, active, isGood)
     
     def step(self):
         if self.active:
             if self.isGood:
-                comms.pushBlueMessage(self.model, potency)
+                #TODO: Do grey nodes message at high potency?
+                comms.pushBlueMessage(self.model, 5)
             else:
-                comms.pushGreyBadMessage(self.model, potency)
+                comms.pushGreyBadMessage(self.model, 5)
             self.active = False
         
