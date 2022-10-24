@@ -7,15 +7,15 @@ from matplotlib.widgets import Button
 class populationModelVis():
     def setValues(self):
         # Default values
-        self.N = 30
-        self.P = 0.20
+        self.N = 50
+        self.P = 0.0330
         self.num_grey = 4
         self.percent_grey_bad = 0.25
-        self.uncertainty_interval = (0,10)
+        self.uncertainty_interval = (0,100)
         self.percent_green_voters = 0.75
-        self.red_is_human = True
+        self.red_is_human = "human"
         self.blue_is_human = True
-        self.blue_energy = 30
+        self.blue_energy = 15
         self.amount_turns = 10
         self.turnNumber = 0
 
@@ -81,7 +81,7 @@ class populationModelVis():
                     pos = self.pos,
                     with_labels= True,
                     # labels of nodes uncertainty except for red and blue or grey
-                    labels = {node: round(self.model.grid.get_cell_list_contents([node])[0].uncertainty, 2) for node in self.model.graph.nodes() if self.model.grid.get_cell_list_contents([node])[0].opinion not in [-1, -2, -3]},
+                    labels = {node: round(self.model.grid.get_cell_list_contents([node])[0].uncertainty, 1) for node in self.model.graph.nodes() if self.model.grid.get_cell_list_contents([node])[0].opinion not in [-1, -2, -3]},
                     node_color = colors,
                 )
         plt.draw()
@@ -134,7 +134,7 @@ class populationModelVis():
                 self.drawButton()
             self.drawParams()
             plt.draw()
-            sleep(2)
+            plt.pause(2)
 
     def __init__(self):
         self.setValues()
