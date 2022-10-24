@@ -113,11 +113,15 @@ class populationModelVis():
         params += f"blue_is_human: {self.blue_is_human}\n"
         params += f"blue_energy: {self.blue_energy}\n"
         params += f"amount_turns: {self.amount_turns}\n"
-        params += f"\ncurrent_green_voters: {current_voters}\n"
-        params += f"current_green_non_voters: {current_non_voters}\n"
-        params += f"current_green_voter_percentage: {round((current_voters / (current_voters + current_non_voters)) * 100, 2)}%\n"
-        params += f"turnNumber: {self.turnNumber}/{self.amount_turns}\n"
-        self.paramBox = plt.annotate(params, xy=(0.15, 0.90), xycoords='axes fraction')
+
+        stats = ""
+        stats += f"current_green_voters: {current_voters}\n"
+        stats += f"current_green_non_voters: {current_non_voters}\n"
+        stats += f"current_green_voter_percentage: {round((current_voters / (current_voters + current_non_voters)) * 100, 2)}%\n"
+        stats += f"turnNumber: {self.turnNumber}/{self.amount_turns}\n"
+
+        self.paramsBox = plt.annotate(params, xy=(0, 0), xycoords='figure fraction')
+        self.statsBox = plt.annotate(stats, xy=(0, 0.9), xycoords='figure fraction')
 
     def updateGraph(self, event):
         self.turnNumber += 1
