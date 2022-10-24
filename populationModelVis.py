@@ -15,8 +15,8 @@ class populationModelVis():
         self.percent_green_voters = 0.75
         self.red_is_human = True
         self.blue_is_human = True
-        self.blue_energy = 50
-        self.amount_turns = 20
+        self.blue_energy = 30
+        self.amount_turns = 10
         self.turnNumber = 0
 
         # Ask if user wants to use default values, print defaults if input is ? or blank
