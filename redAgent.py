@@ -1,5 +1,6 @@
 import mesa
 import communications as comms
+import random
 
 class redAgent(mesa.Agent):
     def __init__(self, unique_id, model, ai, opinion):
@@ -28,7 +29,7 @@ class redAgent(mesa.Agent):
         num_voters, num_non_voters = self.getDistribution()
         percentage = num_voters / (num_voters + num_non_voters)
         print(percentage)
-        if percentage > 0.0 and percentage <= 0.20:
+        if percentage >= 0.0 and percentage <= 0.20:
             potency = 1
         elif percentage > 0.20 and percentage <= 0.40:
             potency = 2
@@ -43,9 +44,9 @@ class redAgent(mesa.Agent):
     def learningInit(self):
         self.last_num_voters, self.last_num_non_voters = self.getDistribution()
         self.gamma = 100
-        self.bins = input("Enter number of bins: ")
-        self.minGamma = input("Enter minimum gamma: ")
-        self.gammaDecay = 1 - (input("Enter gamma decay: "))
+        self.bins = int(input("Enter number of bins: "))
+        self.minGamma = int(input("Enter minimum gamma: "))
+        self.gammaDecay = 1 - ( float(input("Enter gamma decay: ")) )
         self.learningTable = []
         for i in range(0, 100, int(100/self.bins)):
             self.learningTable.append([[i], [0, 0, 0, 0, 0]])
@@ -57,10 +58,10 @@ class redAgent(mesa.Agent):
             self.learningInitialised = True
 
         self.num_voters, self.num_non_voters = self.getDistribution()
-        percentage = num_voters / (num_voters + num_non_voters)
+        percentage = self.num_voters / (self.num_voters + self.num_non_voters)
 
         if self.learning:
-            bin = percentage // self.bins
+            bin = int(percentage // self.bins)
             percentage_change = percentage - self.last_percentage
             self.learningTable[bin][1][self.potency - 1] = percentage_change
             self.learning = False
@@ -72,7 +73,7 @@ class redAgent(mesa.Agent):
             self.learning = True
             self.gamma = self.gamma * self.gammaDecay
         else:
-            bin = percentage // self.bins
+            bin = int(percentage // self.bins)
             maxReward, self.potency = max(self.learningTable[bin][1]), self.learningTable[bin][1].index(max(self.learningTable[bin][1]))
             if maxReward == 0:
                 self.potency = random.randint(1,5)
@@ -125,10 +126,11 @@ class redAgent(mesa.Agent):
         if self.ai == "human":
             self.humanStep()
         if self.ai == "random":
-            potency = random.randint(1,10)
+            potency = random.randint(1,5)
             self.step_from_args(potency)
         if self.ai == "percentage":
             self.percentageStep()
         if self.ai == "smart":
             self.smartStep()
-        
+        if self.ai == "learning":
+            self.learningStep()

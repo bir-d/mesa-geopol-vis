@@ -3,19 +3,20 @@ import networkx as nx
 import populationModel
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
+import time
 
 class populationModelVis():
     def setValues(self):
         # Default values
-        self.N = 50
-        self.P = 0.0330
-        self.num_grey = 4
-        self.percent_grey_bad = 0.25
-        self.uncertainty_interval = (0,100)
-        self.percent_green_voters = 0.75
+        self.N = 25
+        self.P = 0.1
+        self.num_grey = 2
+        self.percent_grey_bad = 0.50
+        self.uncertainty_interval = (0,150)
+        self.percent_green_voters = 0.50
         self.red_is_human = "percentage"
-        self.blue_is_human = True
-        self.blue_energy = 15
+        self.blue_is_human = "human"
+        self.blue_energy = 20
         self.amount_turns = 10
         self.turnNumber = 0
 
@@ -126,6 +127,7 @@ class populationModelVis():
     def updateGraph(self, event):
         self.turnNumber += 1
         for agentString in ["green", "red", "blue", "grey"]:
+            st = time.process_time()
             print(f"\n{agentString}'s TURN")
             self.model.stepAgent(agentString)
             plt.clf()
@@ -134,15 +136,45 @@ class populationModelVis():
                 self.drawButton()
             self.drawParams()
             plt.draw()
+            et = time.process_time()
+            res = et - st
+            # print(f'{agentString} execution time: ', res, 'seconds')
             plt.pause(2)
 
     def __init__(self):
         self.setValues()
+        st = time.process_time()
         self.createModel()
         self.drawModel()
         self.drawButton()
         self.drawParams()
+        et = time.process_time()
+        res = et - st
+        # print('model initiation: ', res, 'seconds')
+
+        # voter_data = []
+        # non_voter_data = []
+        # for i in range(15000):
+        #     total_voters = 0
+        #     total_non_voters = 0
+        #     for node in self.model.get_nodes_by_type("green"):
+        #         if node.opinion == 1:
+        #             total_voters += 1
+        #         else:
+        #             total_non_voters += 1
+        #     voter_data.append( str((total_voters / (total_voters + total_non_voters)) * 100) )
+        #     non_voter_data.append( str((total_non_voters / (total_voters + total_non_voters)) * 100) )
+        #     self.updateGraph(None)
+        # with open('voter_data.txt', 'w') as f:
+        #     for item in voter_data:
+        #         f.write(item + " ")
+        # with open('non_voter_data.txt', 'w') as f:
+        #     for item in non_voter_data:
+        #         f.write(item + " ")
+            
+
 
         plt.show()
+
 
 vis = populationModelVis()

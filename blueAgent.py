@@ -1,5 +1,6 @@
 import mesa
 import communications as comms
+import random
 
 class blueAgent(mesa.Agent):
     def __init__(self, unique_id, model, human, opinion, energy):
@@ -25,5 +26,9 @@ class blueAgent(mesa.Agent):
         self.energy = self.energy - potency
 
     def step(self):
-        if self.human:
+        if self.human == "human":
             self.humanStep()
+        if self.human == "random":
+            potency = random.randint(1, 5)
+            self.updateEnergy(potency)
+            comms.pushBlueMessage(self.model, potency)
