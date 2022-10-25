@@ -13,7 +13,7 @@ class populationModelVis():
         self.percent_grey_bad = 0.25
         self.uncertainty_interval = (0,100)
         self.percent_green_voters = 0.75
-        self.red_is_human = "human"
+        self.red_is_human = "percentage"
         self.blue_is_human = True
         self.blue_energy = 15
         self.amount_turns = 10

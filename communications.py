@@ -14,6 +14,7 @@ def getUncertaintyThreshold(potency, uncertainty_interval):
     return ((min - max) * percentage) + max
 
 def pushRedMessage(model, potency):
+    print(f"pushing red message, potency {potency}")
     uncertainty_interval = model.uncertainty_interval
     threshold = getUncertaintyThreshold(potency, uncertainty_interval)
 
